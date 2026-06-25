@@ -732,6 +732,86 @@ nav{background:var(--azul-escuro);display:flex;gap:0;overflow-x:auto;}
     </div>
   </div>
 </div>
+
+<!-- MODAL EDIÇÃO DE REGISTRO (admin e operador) -->
+<div id="modal-edit-registro" style="display:none;position:fixed;inset:0;background:rgba(6,26,92,0.55);z-index:500;align-items:center;justify-content:center;padding:1rem;">
+  <div style="background:#fff;border-radius:16px;padding:1.75rem;width:100%;max-width:500px;max-height:90vh;overflow-y:auto;box-shadow:0 8px 40px rgba(0,0,0,0.3);">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
+      <div style="font-size:15px;font-weight:700;color:var(--azul);" id="edit-reg-titulo">✏️ Editar registro</div>
+      <button onclick="fecharModalEditRegistro()" style="background:transparent;border:none;font-size:20px;cursor:pointer;color:var(--cinza-texto);">✕</button>
+    </div>
+    <div style="background:var(--cinza-bg);border-radius:8px;padding:10px 14px;margin-bottom:1.25rem;font-size:14px;font-weight:700;color:var(--azul-escuro);" id="edit-reg-produto"></div>
+
+    <input type="hidden" id="edit-reg-id">
+    <input type="hidden" id="edit-reg-tipo">
+    <input type="hidden" id="edit-reg-origem">
+
+    <!-- Campos prevenção -->
+    <div id="edit-reg-prev">
+      <div class="fin-grid">
+        <div class="fin-campo">
+          <label>Número do lote</label>
+          <input type="text" id="edit-reg-lote" placeholder="Ex: LOT20241106">
+        </div>
+        <div class="fin-campo">
+          <label>Data de vencimento</label>
+          <input type="date" id="edit-reg-venc">
+        </div>
+        <div class="fin-campo">
+          <label>Quantidade</label>
+          <input type="number" id="edit-reg-qtd" min="1">
+        </div>
+        <div class="fin-campo">
+          <label>Tipo de embalagem</label>
+          <select id="edit-reg-emb">
+            <option value="">Selecione...</option>
+            <option>Caixa (fechada)</option>
+            <option>Unitária</option>
+            <option>Fardo</option>
+            <option>Pacote</option>
+          </select>
+        </div>
+      </div>
+      <div class="fin-campo" style="margin-top:4px">
+        <label>Observações</label>
+        <textarea id="edit-reg-obs-prev" style="width:100%;min-height:60px;padding:8px 11px;border:1.5px solid var(--cinza-borda);border-radius:8px;font-size:14px;resize:vertical;"></textarea>
+      </div>
+    </div>
+
+    <!-- Campos avaria -->
+    <div id="edit-reg-av" style="display:none">
+      <div class="fin-grid">
+        <div class="fin-campo">
+          <label>Quantidade</label>
+          <input type="number" id="edit-reg-qtd-av" min="1">
+        </div>
+        <div class="fin-campo">
+          <label>Tipo de embalagem</label>
+          <select id="edit-reg-emb-av">
+            <option value="">Selecione...</option>
+            <option>Caixa (fechada)</option>
+            <option>Unitária</option>
+            <option>Fardo</option>
+            <option>Pacote</option>
+          </select>
+        </div>
+      </div>
+      <div class="fin-campo" style="margin-top:4px">
+        <label>Tipo de defeito</label>
+        <input type="text" id="edit-reg-def" placeholder="Ex: Embalagem rasgada">
+      </div>
+      <div class="fin-campo" style="margin-top:8px">
+        <label>Observações</label>
+        <textarea id="edit-reg-obs-av" style="width:100%;min-height:60px;padding:8px 11px;border:1.5px solid var(--cinza-borda);border-radius:8px;font-size:14px;resize:vertical;"></textarea>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:1.25rem;">
+      <button class="btn-acao btn-secundario" onclick="fecharModalEditRegistro()">Cancelar</button>
+      <button class="btn-acao btn-primario" onclick="salvarEditRegistro()">💾 Salvar alterações</button>
+    </div>
+  </div>
+</div>
 </div><!-- /app -->
 
 <script>
@@ -1066,6 +1146,8 @@ function renderAlerta(item) {
     <div class="alerta-acoes">
       ${diasBadge}
       <button class="btn-resolver" onclick="abrirModalResolucao('${item.id}','${item._tipo}',decodeURIComponent('${itemJson}'))">📋 Resolver</button>
+      <button class="btn-resolver" style="background:var(--cinza-texto);margin-top:4px" onclick="abrirModalEditarRegistro(decodeURIComponent('${itemJson}'),'admin')">✏️ Editar</button>
+      <button class="btn-resolver" style="background:var(--vermelho);margin-top:4px" onclick="excluirRegistro('${item.id}','${item._tipo}','admin')">🗑️ Excluir</button>
     </div>
   </div>`;
 }
@@ -1382,7 +1464,11 @@ async function carregarAvarias() {
         </div>
         ${x.fotos&&x.fotos.length?`<div style="display:flex;gap:6px;margin-top:6px">${x.fotos.map(u=>`<img src="${u}" style="width:44px;height:44px;border-radius:6px;object-fit:cover;border:1px solid var(--cinza-borda)">`).join('')}</div>`:''}
       </div>
-      ${x.status==='pendente'?`<div style="flex-shrink:0"><button class="btn-resolver" onclick="abrirModalResolucao('${x.id}','av',decodeURIComponent('${encodeURIComponent(JSON.stringify(x))}'))">📋 Resolver</button></div>`:''}
+      <div style="flex-shrink:0;display:flex;flex-direction:column;gap:4px">
+        ${x.status==='pendente'?`<button class="btn-resolver" onclick="abrirModalResolucao('${x.id}','av',decodeURIComponent('${encodeURIComponent(JSON.stringify(x))}'))">📋 Resolver</button>`:''}
+        <button class="btn-resolver" style="background:var(--cinza-texto)" onclick="abrirModalEditarRegistro(decodeURIComponent('${encodeURIComponent(JSON.stringify({...x,_tipo:'avaria'}))}'),'avarias')">✏️ Editar</button>
+        <button class="btn-resolver" style="background:var(--vermelho)" onclick="excluirRegistro('${x.id}','av','avarias')">🗑️ Excluir</button>
+      </div>
     </div>`;
   }).join('');
 }
@@ -1647,11 +1733,303 @@ function renderCardOperador(item) {
       ${fotosHtml}
       ${destinoHtml}
     </div>
-    <div style="flex-shrink:0">
+    <div style="flex-shrink:0;display:flex;flex-direction:column;gap:4px;align-items:flex-end">
       <span class="${item.status === 'resolvido' ? 'tag-resolvido' : 'tag-pendente'}">${item.status === 'resolvido' ? '✓ Resolvido' : '⏳ Pendente'}</span>
+      <button onclick="abrirModalEditarRegistro(decodeURIComponent('${encodeURIComponent(JSON.stringify(item))}'),'operador')" style="background:var(--azul);color:#fff;border:none;border-radius:6px;padding:5px 10px;font-size:11px;font-weight:700;cursor:pointer;">✏️ Editar</button>
+      <button onclick="excluirRegistro('${item.id}','${item._tipo}','operador')" style="background:var(--vermelho);color:#fff;border:none;border-radius:6px;padding:5px 10px;font-size:11px;font-weight:700;cursor:pointer;">🗑️ Excluir</button>
     </div>
   </div>`;
 }
+
+
+// ========== BUSCA E SELEÇÃO DE FORNECEDOR (modal resolução) ==========
+function buscarFornecedor(v) {
+  const dd = document.getElementById('drop-forn');
+  const q = v.trim().toLowerCase();
+  if (q.length < 1) { dd.classList.remove('aberto'); return; }
+  const res = FORNECEDORES.filter(f =>
+    f.fantasia.toLowerCase().includes(q) ||
+    f.nome.toLowerCase().includes(q) ||
+    f.codigo.startsWith(q)
+  ).slice(0, 60);
+  if (!res.length) { dd.innerHTML='<div class="busca-item" style="color:var(--cinza-texto)">Nenhum fornecedor encontrado</div>'; dd.classList.add('aberto'); return; }
+  dd.innerHTML = res.map(f =>
+    `<div class="busca-item" onclick="selecionarFornecedor('${f.codigo}','${f.fantasia||f.nome}','${f.nome}')">
+      <strong>${f.fantasia||f.nome}</strong>
+      <span>${f.nome} · ${f.codigo}</span>
+    </div>`
+  ).join('');
+  dd.classList.add('aberto');
+}
+
+function abrirDropForn() {
+  const v = document.getElementById('forn-busca-input').value.trim();
+  if (v.length >= 1) buscarFornecedor(v);
+  else {
+    // Mostrar os primeiros 30 fornecedores para facilitar a seleção
+    const dd = document.getElementById('drop-forn');
+    dd.innerHTML = FORNECEDORES.slice(0,30).map(f =>
+      `<div class="busca-item" onclick="selecionarFornecedor('${f.codigo}','${f.fantasia||f.nome}','${f.nome}')">
+        <strong>${f.fantasia||f.nome}</strong>
+        <span>${f.nome} · ${f.codigo}</span>
+      </div>`
+    ).join('');
+    dd.classList.add('aberto');
+  }
+}
+
+function selecionarFornecedor(codigo, fantasia, nome) {
+  document.getElementById('forn-selecionado-codigo').value = codigo;
+  document.getElementById('forn-selecionado-nome').value = nome;
+  document.getElementById('forn-busca-input').value = '';
+  document.getElementById('forn-busca-input').style.borderColor = '';
+  document.getElementById('drop-forn').classList.remove('aberto');
+  document.getElementById('forn-tag-selecionado').style.display = 'block';
+  document.getElementById('forn-tag-texto').innerHTML = '🏭 ' + fantasia + ' <button onclick="limparFornecedor()">✕</button>';
+}
+
+function limparFornecedor() {
+  document.getElementById('forn-selecionado-codigo').value = '';
+  document.getElementById('forn-selecionado-nome').value = '';
+  document.getElementById('forn-busca-input').value = '';
+  document.getElementById('forn-tag-selecionado').style.display = 'none';
+  document.getElementById('forn-tag-texto').innerHTML = '';
+}
+
+// ========== ABA POR FORNECEDOR ==========
+let dadosFornView = [];
+let fornFiltroAtual = null;
+
+async function carregarPorFornecedor() {
+  document.getElementById('lista-por-fornecedor').innerHTML =
+    '<p style="color:var(--cinza-texto);text-align:center;padding:1rem;">Carregando...</p>';
+  const [{ data: prev }, { data: av }] = await Promise.all([
+    sb.from('apb_prevencao').select('*').not('fin_fornecedor','is',null).order('created_at',{ascending:false}),
+    sb.from('apb_avarias').select('*').not('fin_fornecedor','is',null).order('created_at',{ascending:false})
+  ]);
+  dadosFornView = [
+    ...(prev||[]).map(x=>({...x,_tipo:'prev'})),
+    ...(av||[]).map(x=>({...x,_tipo:'av'}))
+  ];
+  fornFiltroAtual = null;
+  document.getElementById('filt-forn-input').value = '';
+  renderFornecedorView();
+}
+
+function filtrarPorFornecedor(v) {
+  const dd = document.getElementById('drop-filt-forn');
+  const q = v.trim().toLowerCase();
+  if (q.length < 1) { dd.classList.remove('aberto'); fornFiltroAtual = null; renderFornecedorView(); return; }
+  const res = FORNECEDORES.filter(f =>
+    f.fantasia.toLowerCase().includes(q) ||
+    f.nome.toLowerCase().includes(q) ||
+    f.codigo.startsWith(q)
+  ).slice(0, 40);
+  dd.innerHTML = res.map(f =>
+    `<div class="busca-item" onclick="selecionarFiltForn('${f.codigo}','${f.fantasia||f.nome}')">
+      <strong>${f.fantasia||f.nome}</strong><span>${f.nome} · ${f.codigo}</span>
+    </div>`
+  ).join('');
+  dd.classList.toggle('aberto', res.length > 0);
+}
+
+function abrirDropFiltForn() {
+  const v = document.getElementById('filt-forn-input').value.trim();
+  if (v.length >= 1) filtrarPorFornecedor(v);
+}
+
+function selecionarFiltForn(codigo, fantasia) {
+  document.getElementById('filt-forn-input').value = fantasia + ' (' + codigo + ')';
+  document.getElementById('drop-filt-forn').classList.remove('aberto');
+  fornFiltroAtual = codigo;
+  renderFornecedorView();
+}
+
+function renderFornecedorView() {
+  const tipoFilt   = document.getElementById('filt-tipo-forn').value;
+  const statusFilt = document.getElementById('filt-status-forn').value;
+  let dados = dadosFornView;
+  if (fornFiltroAtual) dados = dados.filter(x => x.fin_fornecedor_codigo === fornFiltroAtual);
+  if (tipoFilt   !== 'todos') dados = dados.filter(x => x._tipo === tipoFilt);
+  if (statusFilt !== 'todos') dados = dados.filter(x => x.status === statusFilt);
+
+  const grupos = {};
+  dados.forEach(item => {
+    const key  = item.fin_fornecedor_codigo || 'SEM_COD';
+    const nome = item.fin_fornecedor || 'Fornecedor não identificado';
+    if (!grupos[key]) grupos[key] = { nome, codigo: key, itens: [], totalPerda: 0, totalReceber: 0 };
+    grupos[key].itens.push(item);
+    if (item._tipo === 'prev' && item.fin_rebaixado != null && item.fin_custo != null)
+      grupos[key].totalPerda += Math.max(0, item.fin_custo - item.fin_rebaixado) * (item.quantidade || 0);
+    if (item._tipo === 'av' && item.fin_pago_fornecedor === true)
+      grupos[key].totalReceber += item.fin_av_total || 0;
+  });
+
+  const el = document.getElementById('lista-por-fornecedor');
+  if (!Object.keys(grupos).length) {
+    el.innerHTML = '<div class="empty-state"><div class="ei">🏭</div><p>Nenhum lançamento com fornecedor vinculado.</p></div>';
+    return;
+  }
+  el.innerHTML = Object.values(grupos).map(g => renderGrupoFornecedor(g)).join('');
+}
+
+function renderGrupoFornecedor(g) {
+  const totalGeral = g.totalPerda + g.totalReceber;
+  const temAbertos = g.itens.some(x => x.status === 'pendente');
+  const itensHtml = g.itens.map(item => {
+    const isPrev = item._tipo === 'prev';
+    const dt    = new Date(item.created_at).toLocaleDateString('pt-BR');
+    const dtRes = item.resolvido_em ? new Date(item.resolvido_em).toLocaleDateString('pt-BR') : null;
+    let valorHtml = '';
+    if (isPrev && item.fin_rebaixado != null && item.fin_custo != null) {
+      const perda = Math.max(0, item.fin_custo - item.fin_rebaixado) * (item.quantidade || 0);
+      valorHtml = `<span style="color:var(--vermelho);font-weight:700">Perda: R$ ${perda.toFixed(2)}</span>`;
+    } else if (!isPrev && item.fin_pago_fornecedor === true) {
+      valorHtml = `<span style="color:var(--verde);font-weight:700">A receber: R$ ${(item.fin_av_total||0).toFixed(2)}</span>`;
+    } else if (!isPrev && item.fin_pago_fornecedor === false) {
+      valorHtml = `<span style="color:var(--cinza-texto)">Sem ressarcimento</span>`;
+    } else {
+      valorHtml = `<span style="color:var(--cinza-texto)">Aguardando resolução</span>`;
+    }
+    const statusTag = item.status === 'resolvido'
+      ? `<span class="badge-quitado" style="font-size:10px">✓ Resolvido${dtRes?' em '+dtRes:''}</span>`
+      : `<span class="badge-aberto" style="font-size:10px">⏳ Pendente</span>`;
+    return `<div style="padding:10px 14px;border-bottom:1px solid var(--cinza-borda);display:flex;align-items:flex-start;gap:10px;">
+      <div style="font-size:18px;flex-shrink:0">${isPrev?'⏰':'📦'}</div>
+      <div style="flex:1;">
+        <div style="font-size:13px;font-weight:700;color:var(--azul-escuro)">${item.produto_nome}</div>
+        <div style="font-size:11px;color:var(--cinza-texto)">${isPrev?'Prevenção':'Avaria'} · Qtd: ${item.quantidade} · ${dt}</div>
+        <div style="font-size:12px;margin-top:4px;display:flex;align-items:center;gap:8px;flex-wrap:wrap">${valorHtml} ${statusTag}</div>
+        ${item.status==='pendente'?`<button onclick="abrirModalResolucao('${item.id}','${item._tipo}',decodeURIComponent('${encodeURIComponent(JSON.stringify(item))}'))" style="margin-top:6px;background:var(--azul);color:#fff;border:none;border-radius:6px;padding:4px 10px;font-size:11px;font-weight:700;cursor:pointer">📋 Resolver</button>`:''}
+      </div>
+    </div>`;
+  }).join('');
+
+  return `<div class="forn-card" style="margin-bottom:1rem;">
+    <div class="forn-header">
+      <div><h3>🏭 ${g.nome}</h3><span>${g.codigo} · ${g.itens.length} lançamento${g.itens.length!==1?'s':''}</span></div>
+      <span class="${temAbertos?'badge-aberto':'badge-quitado'}">${temAbertos?'Em aberto':'Quitado'}</span>
+    </div>
+    ${itensHtml}
+    <div class="forn-total-row">
+      <div>
+        <div class="label">Total acumulado</div>
+        ${g.totalPerda>0?`<div style="font-size:11px;opacity:.75">Rebaixas: R$ ${g.totalPerda.toFixed(2)}</div>`:''}
+        ${g.totalReceber>0?`<div style="font-size:11px;opacity:.75">Avarias: R$ ${g.totalReceber.toFixed(2)}</div>`:''}
+      </div>
+      <div style="text-align:right">
+        <div class="valor">R$ ${totalGeral.toFixed(2)}</div>
+        ${temAbertos?`<button class="btn-quitar" onclick="quitarFornecedor('${g.codigo}',this)">✓ Marcar como quitado</button>`:'<span style="font-size:11px;opacity:.7">Quitado</span>'}
+      </div>
+    </div>
+  </div>`;
+}
+
+async function quitarFornecedor(codigoForn, btn) {
+  if (!confirm('Confirma quitar todos os lançamentos deste fornecedor?')) return;
+  btn.disabled = true; btn.textContent = 'Quitando...';
+  const [r1, r2] = await Promise.all([
+    sb.from('apb_prevencao').update({status:'resolvido',resolvido_por:usuarioAtual.id,resolvido_em:new Date().toISOString()})
+      .eq('fin_fornecedor_codigo',codigoForn).eq('status','pendente'),
+    sb.from('apb_avarias').update({status:'resolvido',resolvido_por:usuarioAtual.id,resolvido_em:new Date().toISOString()})
+      .eq('fin_fornecedor_codigo',codigoForn).eq('status','pendente')
+  ]);
+  if (r1.error||r2.error) { toast('Erro ao quitar.','erro'); btn.disabled=false; return; }
+  toast('Fornecedor quitado!','sucesso');
+  carregarPorFornecedor();
+}
+
+// ========== EDIÇÃO E EXCLUSÃO DE REGISTROS ==========
+// Admin e operador podem editar/excluir qualquer registro pendente
+
+async function excluirRegistro(id, tipo, origem) {
+  if (!confirm('Tem certeza que deseja EXCLUIR este registro? Esta ação não pode ser desfeita.')) return;
+  const tabela = (tipo==='prev'||tipo==='prevencao') ? 'apb_prevencao' : 'apb_avarias';
+  const { error } = await sb.from(tabela).delete().eq('id', id);
+  if (error) { toast('Erro ao excluir: ' + error.message, 'erro'); return; }
+  toast('Registro excluído.', 'sucesso');
+  // Recarregar a aba correta
+  if (origem === 'admin') carregarAdmin();
+  if (origem === 'operador') carregarMeusLancamentos();
+  if (origem === 'avarias') carregarAvarias();
+}
+
+function abrirModalEditarRegistro(itemJson, origem) {
+  const item = JSON.parse(itemJson);
+  const isPrev = item._tipo === 'prevencao' || item._tipo === 'prev';
+
+  document.getElementById('edit-reg-id').value    = item.id;
+  document.getElementById('edit-reg-tipo').value  = isPrev ? 'prev' : 'av';
+  document.getElementById('edit-reg-origem').value = origem;
+  document.getElementById('edit-reg-titulo').textContent = isPrev ? '✏️ Editar — Prevenção de Perdas' : '✏️ Editar — Avaria';
+  document.getElementById('edit-reg-produto').textContent = item.produto_nome;
+
+  document.getElementById('edit-reg-prev').style.display = isPrev ? 'block' : 'none';
+  document.getElementById('edit-reg-av').style.display   = !isPrev ? 'block' : 'none';
+
+  if (isPrev) {
+    document.getElementById('edit-reg-lote').value = item.lote || '';
+    document.getElementById('edit-reg-venc').value = item.data_vencimento || '';
+    document.getElementById('edit-reg-qtd').value  = item.quantidade || '';
+    document.getElementById('edit-reg-emb').value  = item.tipo_embalagem || '';
+    document.getElementById('edit-reg-obs-prev').value = item.observacoes || '';
+  } else {
+    document.getElementById('edit-reg-qtd-av').value  = item.quantidade || '';
+    document.getElementById('edit-reg-emb-av').value  = item.tipo_embalagem || '';
+    document.getElementById('edit-reg-def').value     = item.tipo_defeito || '';
+    document.getElementById('edit-reg-obs-av').value  = item.observacoes || '';
+  }
+  document.getElementById('modal-edit-registro').style.display = 'flex';
+}
+
+function fecharModalEditRegistro() {
+  document.getElementById('modal-edit-registro').style.display = 'none';
+}
+
+async function salvarEditRegistro() {
+  const id     = document.getElementById('edit-reg-id').value;
+  const tipo   = document.getElementById('edit-reg-tipo').value;
+  const origem = document.getElementById('edit-reg-origem').value;
+  const isPrev = tipo === 'prev';
+  const tabela = isPrev ? 'apb_prevencao' : 'apb_avarias';
+
+  let update = {};
+  if (isPrev) {
+    update = {
+      lote:           document.getElementById('edit-reg-lote').value || null,
+      data_vencimento:document.getElementById('edit-reg-venc').value || null,
+      quantidade:     parseInt(document.getElementById('edit-reg-qtd').value) || null,
+      tipo_embalagem: document.getElementById('edit-reg-emb').value || null,
+      observacoes:    document.getElementById('edit-reg-obs-prev').value || null,
+    };
+    const dias = update.data_vencimento
+      ? Math.ceil((new Date(update.data_vencimento)-new Date())/86400000) : null;
+    if (dias !== null) update.dias_restantes = dias;
+  } else {
+    update = {
+      quantidade:    parseInt(document.getElementById('edit-reg-qtd-av').value) || null,
+      tipo_embalagem:document.getElementById('edit-reg-emb-av').value || null,
+      tipo_defeito:  document.getElementById('edit-reg-def').value || null,
+      observacoes:   document.getElementById('edit-reg-obs-av').value || null,
+    };
+  }
+
+  const { error } = await sb.from(tabela).update(update).eq('id', id);
+  if (error) { toast('Erro ao salvar: ' + error.message, 'erro'); return; }
+  toast('Registro atualizado com sucesso!', 'sucesso');
+  fecharModalEditRegistro();
+  if (origem === 'admin') carregarAdmin();
+  if (origem === 'operador') carregarMeusLancamentos();
+  if (origem === 'avarias') carregarAvarias();
+}
+
+// fechar dropdowns ao clicar fora
+document.addEventListener('click', e => {
+  if (!e.target.closest('#forn-busca-wrap'))
+    document.getElementById('drop-forn')?.classList.remove('aberto');
+  if (!e.target.closest('[id="filt-forn-input"]') && !e.target.closest('#drop-filt-forn'))
+    document.getElementById('drop-filt-forn')?.classList.remove('aberto');
+});
 
 </script>
 </body>
