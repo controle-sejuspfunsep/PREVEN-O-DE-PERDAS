@@ -815,6 +815,23 @@ nav{background:var(--azul-escuro);display:flex;gap:0;overflow-x:auto;}
 </div><!-- /app -->
 
 <script>
+
+// ========== UI HELPERS (toast e loading) ==========
+function toast(msg, tipo) {
+  const el = document.getElementById('toast');
+  if (!el) return;
+  el.textContent = msg;
+  el.className = tipo || '';
+  el.style.display = 'block';
+  clearTimeout(window._toastTimer);
+  window._toastTimer = setTimeout(() => { el.style.display = 'none'; }, 3500);
+}
+
+function mostrarLoading(v) {
+  const el = document.getElementById('loading');
+  if (el) el.style.display = v ? 'flex' : 'none';
+}
+
 // ========== CONFIGURAÇÃO SUPABASE ==========
 const SUPABASE_URL = 'https://ttlbrypfkjkdfbxthxmt.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR0bGJyeXBma2prZGZieHRoeG10Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIzNDMwNzAsImV4cCI6MjA5NzkxOTA3MH0.a9Znoh1BjPE64BVSGP5gcqAypyn774u8pdr3fykFTv8';
@@ -1183,7 +1200,7 @@ function abrirModalResolucao(id, tipo, itemJson) {
   document.getElementById('secao-av-fin').style.display  = !isPrev ? 'block' : 'none';
 
   // resetar campos
-  ['fin-custo','fin-venda','fin-rebaixado','fin-fornecedor','fin-av-custo'].forEach(id => {
+  ['fin-custo','fin-venda','fin-rebaixado','fin-av-custo'].forEach(id => {
     const el = document.getElementById(id); if(el) el.value='';
   });
   document.getElementById('resumo-fin-prev').style.display='none';
@@ -1275,7 +1292,6 @@ async function salvarResolucaoModal() {
   let extras = {};
   if(isPrev) {
     const destino = document.getElementById('fin-rebaixado').value ? 'Preço rebaixado' : 'Pague 1, leve 2';
-    const fornecedor = document.getElementById('fin-fornecedor').value||null;
     extras = {
       destino,
       fin_custo: parseFloat(document.getElementById('fin-custo').value)||null,
@@ -1336,7 +1352,7 @@ function gerarMensagemWpp(tipo) {
     const custo = parseFloat(document.getElementById('fin-custo').value)||0;
     const rebx  = parseFloat(document.getElementById('fin-rebaixado').value)||0;
     const perda = Math.max(0,custo-rebx)*qtd;
-    const forn  = document.getElementById('fin-fornecedor').value||'[Fornecedor]';
+    const forn  = itemModalAtual?.fin_fornecedor || document.getElementById('forn-selecionado-nome').value || '[Fornecedor]';
     msg = `*SELL-OUT / REBAIXA DE PREÇO*%0A`+
           `Armazém Preço Baixo — ${dt}%0A%0A`+
           `Produto: ${item.produto_nome}%0A`+
@@ -1378,7 +1394,7 @@ function gerarPDF(tipo) {
     const rebx  = parseFloat(document.getElementById('fin-rebaixado').value)||0;
     const perdaUnit  = Math.max(0,custo-rebx);
     const perdaTotal = perdaUnit*qtd;
-    const forn = document.getElementById('fin-fornecedor').value||'Não informado';
+    const forn = itemModalAtual?.fin_fornecedor || document.getElementById('forn-selecionado-nome').value || 'Não informado';
     corpo = `<h2 style="color:#0A2A8C">SELL-OUT / REBAIXA DE PREÇO</h2>
     <p><b>Armazém Preço Baixo</b> &nbsp;|&nbsp; Emitido em: ${dt}</p><hr>
     <table width="100%" style="border-collapse:collapse;margin-top:16px">
