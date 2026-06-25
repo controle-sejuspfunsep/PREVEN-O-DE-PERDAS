@@ -1289,6 +1289,16 @@ async function salvarResolucaoModal() {
     const pago = pagoFornecedorAtual;
     const destino = document.getElementById('av-destino-sel').value;
     if(!destino){toast('Selecione o destino da mercadoria.','erro');return;}
+    if(pago === null){
+      toast('Informe se o fornecedor paga ou não o ressarcimento.','erro');
+      document.getElementById('btn-pago-sim').style.outline='2px solid var(--vermelho)';
+      document.getElementById('btn-pago-nao').style.outline='2px solid var(--vermelho)';
+      setTimeout(()=>{
+        document.getElementById('btn-pago-sim').style.outline='';
+        document.getElementById('btn-pago-nao').style.outline='';
+      },2500);
+      return;
+    }
     extras = {
       destino,
       fin_pago_fornecedor: pago,
@@ -1299,14 +1309,18 @@ async function salvarResolucaoModal() {
     };
   }
 
-  const { error } = await sb.from(tabela).update({
-    status: 'resolvido',
-    resolvido_por: usuarioAtual.id,
-    resolvido_em: new Date().toISOString(),
-    ...extras
-  }).eq('id', id);
+  let saveError = null;
+  try {
+    const { error } = await sb.from(tabela).update({
+      status: 'resolvido',
+      resolvido_por: usuarioAtual.id,
+      resolvido_em: new Date().toISOString(),
+      ...extras
+    }).eq('id', id);
+    saveError = error;
+  } catch(e) { saveError = {message: e.message}; }
 
-  if(error){ toast('Erro ao salvar: '+error.message,'erro'); return; }
+  if(saveError){ toast('Erro ao salvar: ' + saveError.message, 'erro'); console.error('Erro save:', saveError); return; }
   toast('Resolvido com sucesso!','sucesso');
   fecharModal();
   carregarAdmin();
@@ -1945,13 +1959,21 @@ async function quitarFornecedor(codigoForn, btn) {
 async function excluirRegistro(id, tipo, origem) {
   if (!confirm('Tem certeza que deseja EXCLUIR este registro? Esta ação não pode ser desfeita.')) return;
   const tabela = (tipo==='prev'||tipo==='prevencao') ? 'apb_prevencao' : 'apb_avarias';
-  const { error } = await sb.from(tabela).delete().eq('id', id);
-  if (error) { toast('Erro ao excluir: ' + error.message, 'erro'); return; }
-  toast('Registro excluído.', 'sucesso');
-  // Recarregar a aba correta
-  if (origem === 'admin') carregarAdmin();
+  let delError = null;
+  try {
+    const { error } = await sb.from(tabela).delete().eq('id', id);
+    delError = error;
+  } catch(e) { delError = {message: e.message}; }
+  
+  if (delError) {
+    console.error('Erro ao excluir:', delError);
+    toast('Erro ao excluir: ' + delError.message, 'erro');
+    return;
+  }
+  toast('Registro excluído com sucesso!', 'sucesso');
+  if (origem === 'admin')    carregarAdmin();
   if (origem === 'operador') carregarMeusLancamentos();
-  if (origem === 'avarias') carregarAvarias();
+  if (origem === 'avarias')  carregarAvarias();
 }
 
 function abrirModalEditarRegistro(itemJson, origem) {
