@@ -146,6 +146,41 @@ nav{background:var(--azul-escuro);display:flex;gap:0;overflow-x:auto;}
 .sub-campo{display:none;}
 .sub-campo.visivel{display:block;}
 
+
+/* ===== MÓDULO FINANCEIRO / REBAIXA / AVARIA ===== */
+.modal-overlay{position:fixed;inset:0;background:rgba(6,26,92,0.55);z-index:300;display:flex;align-items:center;justify-content:center;padding:1rem;}
+.modal-box{background:var(--branco);border-radius:16px;padding:1.75rem;width:100%;max-width:560px;max-height:90vh;overflow-y:auto;box-shadow:0 8px 40px rgba(0,0,0,0.3);}
+.modal-titulo{font-size:16px;font-weight:700;color:var(--azul);margin-bottom:1.25rem;display:flex;align-items:center;gap:8px;}
+.modal-titulo .icone{width:32px;height:32px;border-radius:8px;background:var(--amarelo-claro);display:flex;align-items:center;justify-content:center;font-size:17px;}
+.fin-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:1rem;}
+.fin-campo label{display:block;font-size:11px;font-weight:700;color:var(--cinza-texto);text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px;}
+.fin-campo input,.fin-campo select{width:100%;padding:9px 11px;border:1.5px solid var(--cinza-borda);border-radius:8px;font-size:14px;outline:none;}
+.fin-campo input:focus,.fin-campo select:focus{border-color:var(--azul);}
+.resumo-fin{background:var(--cinza-bg);border-radius:10px;padding:1rem;margin:1rem 0;}
+.resumo-fin h4{font-size:12px;font-weight:700;color:var(--cinza-texto);text-transform:uppercase;letter-spacing:.4px;margin-bottom:10px;}
+.resumo-linha{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid var(--cinza-borda);font-size:13px;}
+.resumo-linha:last-child{border-bottom:none;font-weight:700;font-size:14px;}
+.resumo-linha.destaque{color:var(--vermelho);font-weight:700;}
+.resumo-linha.positivo{color:var(--verde);font-weight:700;}
+.btn-grupo{display:flex;gap:8px;flex-wrap:wrap;margin-top:1rem;}
+.btn-wpp{background:#25D366;color:#fff;border:none;border-radius:8px;padding:9px 16px;font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px;}
+.btn-wpp:hover{background:#1ebe5d;}
+.btn-pdf{background:var(--vermelho);color:#fff;border:none;border-radius:8px;padding:9px 16px;font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px;}
+.btn-pdf:hover{background:#a93226;}
+.btn-prejuizo{background:var(--cinza-texto);color:#fff;border:none;border-radius:8px;padding:9px 16px;font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px;}
+.toggle-pago{display:flex;gap:6px;margin-bottom:1rem;}
+.toggle-pago button{flex:1;padding:8px;border-radius:8px;border:1.5px solid var(--cinza-borda);background:var(--branco);font-size:13px;font-weight:600;cursor:pointer;}
+.toggle-pago button.ativo-sim{background:var(--verde);border-color:var(--verde);color:#fff;}
+.toggle-pago button.ativo-nao{background:var(--vermelho);border-color:var(--vermelho);color:#fff;}
+.secao-admin{display:flex;gap:8px;margin-bottom:1rem;flex-wrap:wrap;}
+.btn-secao{padding:7px 16px;border-radius:20px;border:1.5px solid var(--cinza-borda);background:var(--branco);color:var(--cinza-texto);font-size:13px;font-weight:600;cursor:pointer;}
+.btn-secao.ativo{background:var(--azul);border-color:var(--azul);color:#fff;}
+.relatorio-card{background:var(--branco);border:1px solid var(--cinza-borda);border-radius:var(--radius);padding:1.25rem;margin-bottom:10px;}
+.relatorio-card h4{font-size:14px;font-weight:700;color:var(--azul-escuro);margin-bottom:4px;}
+.relatorio-card p{font-size:12px;color:var(--cinza-texto);}
+.valor-grande{font-size:22px;font-weight:800;color:var(--vermelho);margin:6px 0;}
+.valor-grande.verde{color:var(--verde);}
+
 /* Painel operador — cards de lançamento */
 .lanc-item{display:flex;align-items:flex-start;gap:12px;padding:14px;border-radius:var(--radius);border:1px solid var(--cinza-borda);margin-bottom:8px;background:var(--branco);}
 .lanc-ico{width:40px;height:40px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;}
@@ -400,14 +435,47 @@ nav{background:var(--azul-escuro);display:flex;gap:0;overflow-x:auto;}
         <div class="stat"><div class="stat-val ok" id="stat-res">—</div><div class="stat-lbl">Resolvidos (mês)</div></div>
       </div>
 
-      <div class="card">
-        <div class="card-titulo"><span class="icone">🔔</span> Alertas pendentes</div>
-        <div id="lista-alertas"><p style="color:var(--cinza-texto);text-align:center;padding:1rem;">Carregando alertas...</p></div>
+      <div class="secao-admin">
+        <button class="btn-secao ativo" onclick="mudarSecaoAdmin('alertas',this)">🔔 Alertas pendentes</button>
+        <button class="btn-secao" onclick="mudarSecaoAdmin('rebaixas',this)">🏷️ Rebaixas / Sell-out</button>
+        <button class="btn-secao" onclick="mudarSecaoAdmin('avarias-fin',this)">📦 Avarias financeiro</button>
+        <button class="btn-secao" onclick="mudarSecaoAdmin('prejuizos',this)">📉 Prejuízos</button>
       </div>
 
-      <div class="card">
-        <div class="card-titulo"><span class="icone">✅</span> Resolvidos recentes</div>
-        <div id="lista-resolvidos"><p style="color:var(--cinza-texto);text-align:center;padding:1rem;">Carregando...</p></div>
+      <!-- Alertas pendentes -->
+      <div id="secao-alertas">
+        <div class="card">
+          <div class="card-titulo"><span class="icone">🔔</span> Alertas pendentes de resolução</div>
+          <div id="lista-alertas"><p style="color:var(--cinza-texto);text-align:center;padding:1rem;">Carregando alertas...</p></div>
+        </div>
+        <div class="card">
+          <div class="card-titulo"><span class="icone">✅</span> Resolvidos recentes</div>
+          <div id="lista-resolvidos"><p style="color:var(--cinza-texto);text-align:center;padding:1rem;">Carregando...</p></div>
+        </div>
+      </div>
+
+      <!-- Rebaixas / Sell-out -->
+      <div id="secao-rebaixas" style="display:none">
+        <div class="card">
+          <div class="card-titulo"><span class="icone">🏷️</span> Relatório de rebaixas e sell-out</div>
+          <div id="lista-rebaixas"><p style="color:var(--cinza-texto);text-align:center;padding:1rem;">Carregando...</p></div>
+        </div>
+      </div>
+
+      <!-- Avarias financeiro -->
+      <div id="secao-avarias-fin" style="display:none">
+        <div class="card">
+          <div class="card-titulo"><span class="icone">📦</span> Avarias — cobranças ao fornecedor</div>
+          <div id="lista-avarias-fin"><p style="color:var(--cinza-texto);text-align:center;padding:1rem;">Carregando...</p></div>
+        </div>
+      </div>
+
+      <!-- Prejuízos -->
+      <div id="secao-prejuizos" style="display:none">
+        <div class="card">
+          <div class="card-titulo"><span class="icone">📉</span> Relatório de prejuízos (sem ressarcimento)</div>
+          <div id="lista-prejuizos"><p style="color:var(--cinza-texto);text-align:center;padding:1rem;">Carregando...</p></div>
+        </div>
       </div>
     </div>
 
@@ -437,6 +505,100 @@ nav{background:var(--azul-escuro);display:flex;gap:0;overflow-x:auto;}
     </div>
 
   </div><!-- /conteudo -->
+
+<!-- MODAL RESOLUÇÃO FINANCEIRA -->
+<div id="modal-resolucao" style="display:none;position:fixed;inset:0;background:rgba(6,26,92,0.55);z-index:300;align-items:center;justify-content:center;padding:1rem;">
+  <div style="background:#fff;border-radius:16px;padding:1.75rem;width:100%;max-width:560px;max-height:90vh;overflow-y:auto;box-shadow:0 8px 40px rgba(0,0,0,0.3);">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.25rem;">
+      <div style="font-size:16px;font-weight:700;color:var(--azul);">📋 Resolver lançamento</div>
+      <button onclick="fecharModal()" style="background:transparent;border:none;font-size:20px;cursor:pointer;color:var(--cinza-texto);">✕</button>
+    </div>
+
+    <div style="background:var(--cinza-bg);border-radius:8px;padding:10px 14px;margin-bottom:1.25rem;">
+      <div style="font-size:14px;font-weight:700;color:var(--azul-escuro);" id="modal-prod-nome"></div>
+      <div style="font-size:12px;color:var(--cinza-texto);margin-top:2px;" id="modal-qtd-info"></div>
+    </div>
+
+    <!-- SEÇÃO PREVENÇÃO -->
+    <div id="secao-prev-fin">
+      <div style="font-size:13px;font-weight:700;color:var(--cinza-texto);text-transform:uppercase;letter-spacing:.4px;margin-bottom:10px;">💰 Valores para rebaixa</div>
+      <div class="fin-grid">
+        <div class="fin-campo">
+          <label>Preço de custo (R$)</label>
+          <input type="number" id="fin-custo" placeholder="0,00" step="0.01" oninput="calcularRebaixa()">
+        </div>
+        <div class="fin-campo">
+          <label>Preço de venda original (R$)</label>
+          <input type="number" id="fin-venda" placeholder="0,00" step="0.01" oninput="calcularRebaixa()">
+        </div>
+        <div class="fin-campo">
+          <label>Preço rebaixado (R$)</label>
+          <input type="number" id="fin-rebaixado" placeholder="0,00" step="0.01" oninput="calcularRebaixa()">
+        </div>
+        <div class="fin-campo">
+          <label>Fornecedor responsável</label>
+          <input type="text" id="fin-fornecedor" placeholder="Nome do fornecedor">
+        </div>
+      </div>
+
+      <div class="resumo-fin" id="resumo-fin-prev" style="display:none;">
+        <h4>Resumo da rebaixa</h4>
+        <div class="resumo-linha"><span>Quantidade</span><span id="r-qtd">—</span></div>
+        <div class="resumo-linha"><span>Preço de custo</span><span id="r-custo">—</span></div>
+        <div class="resumo-linha"><span>Preço de venda original</span><span id="r-venda">—</span></div>
+        <div class="resumo-linha"><span>Preço rebaixado</span><span id="r-rebaixado">—</span></div>
+        <div class="resumo-linha"><span>Perda por unidade</span><span id="r-perda-unit">—</span></div>
+        <div class="resumo-linha destaque"><span>⚠️ Perda total (sell-out)</span><span id="r-perda-total">—</span></div>
+        <div class="resumo-linha"><span>Margem de venda perdida</span><span id="r-margem">—</span></div>
+      </div>
+
+      <div class="btn-grupo">
+        <button class="btn-pdf" onclick="gerarPDF('rebaixa')">📄 Baixar PDF</button>
+        <button class="btn-wpp" onclick="gerarMensagemWpp('rebaixa')">💬 Enviar WhatsApp</button>
+        <button class="btn-acao btn-primario" onclick="salvarResolucaoModal()">💾 Salvar resolução</button>
+      </div>
+    </div>
+
+    <!-- SEÇÃO AVARIA -->
+    <div id="secao-av-fin">
+      <div style="font-size:13px;font-weight:700;color:var(--cinza-texto);text-transform:uppercase;letter-spacing:.4px;margin-bottom:10px;">📦 Destino da mercadoria</div>
+      <div class="fin-campo" style="margin-bottom:1rem;">
+        <label>Destino</label>
+        <select id="av-destino-sel">
+          <option value="">Selecione...</option>
+          <option value="Descarte">Descarte</option>
+          <option value="Guardar para troca">Guardar para troca</option>
+        </select>
+      </div>
+
+      <div style="font-size:13px;font-weight:700;color:var(--cinza-texto);text-transform:uppercase;letter-spacing:.4px;margin-bottom:8px;">💰 Ressarcimento do fornecedor</div>
+      <div class="toggle-pago" style="display:flex;gap:8px;margin-bottom:1rem;">
+        <button id="btn-pago-sim" onclick="setPagoFornecedor(true)" style="flex:1;padding:10px;border-radius:8px;border:1.5px solid var(--cinza-borda);background:var(--branco);font-size:13px;font-weight:600;cursor:pointer;">✅ Fornecedor paga</button>
+        <button id="btn-pago-nao" onclick="setPagoFornecedor(false)" style="flex:1;padding:10px;border-radius:8px;border:1.5px solid var(--cinza-borda);background:var(--branco);font-size:13px;font-weight:600;cursor:pointer;">❌ Sem ressarcimento</button>
+      </div>
+
+      <div id="campo-av-custo" style="display:none;margin-bottom:1rem;">
+        <div class="fin-campo">
+          <label>Valor unitário a cobrar do fornecedor (R$)</label>
+          <input type="number" id="fin-av-custo" placeholder="0,00" step="0.01" oninput="calcularAvaria()">
+        </div>
+      </div>
+
+      <div class="resumo-fin" id="resumo-fin-av" style="display:none;">
+        <h4>Resumo da avaria</h4>
+        <div class="resumo-linha"><span>Quantidade</span><span id="r-av-qtd">—</span></div>
+        <div class="resumo-linha"><span>Valor unitário</span><span id="r-av-custo">—</span></div>
+        <div class="resumo-linha" style="font-weight:700"><span>Total</span><span id="r-av-total">—</span></div>
+      </div>
+
+      <div class="btn-grupo">
+        <button class="btn-pdf" onclick="gerarPDF('avaria')">📄 Baixar PDF</button>
+        <button class="btn-wpp" onclick="gerarMensagemWpp('avaria')">💬 Enviar WhatsApp</button>
+        <button class="btn-acao btn-primario" onclick="salvarResolucaoModal()">💾 Salvar resolução</button>
+      </div>
+    </div>
+  </div>
+</div>
 </div><!-- /app -->
 
 <script>
@@ -727,27 +889,24 @@ async function carregarAdmin() {
 
 function renderAlerta(item) {
   const isPrev = item._tipo === 'prev';
-  const opcoesDestino = isPrev
-    ? '<option value="">Selecione o destino...</option><option value="Preço rebaixado">Preço rebaixado</option><option value="Pague 1, leve 2">Pague 1, leve 2</option>'
-    : '<option value="">Selecione o destino...</option><option value="Descarte">Descarte</option><option value="Guardar para troca">Guardar para troca</option>';
   const detalhe = isPrev
     ? `Validade: <strong>${item.data_vencimento}</strong> · Lote: ${item.lote||'—'} · ${item.quantidade} un · ${item.tipo_embalagem||'—'}`
     : `Avaria: <strong>${item.tipo_avaria==='validade'?'Fora da validade':'Armazenamento'}</strong>${item.tipo_defeito?' — '+item.tipo_defeito:''} · ${item.quantidade} un`;
   const dt = new Date(item.created_at).toLocaleString('pt-BR');
   const diasBadge = item.dias_restantes != null
     ? `<span class="dias-badge ${item.dias_restantes<=7?'dias-critico':item.dias_restantes<=30?'dias-atencao':'dias-ok'}">${item.dias_restantes}d</span>`:'';
+  const itemJson = encodeURIComponent(JSON.stringify(item));
   return `<div class="alerta-item" id="alerta-${item.id}-${item._tipo}">
     <div class="alerta-ico ${isPrev?'ico-prev':'ico-av'}">${isPrev?'⏰':'📦'}</div>
     <div class="alerta-corpo">
-      <h4>${item.produto_nome}</h4>
+      <h4>${item.produto_nome} <span style="font-weight:400;font-size:12px;color:var(--cinza-texto)">${item.produto_codigo}</span></h4>
       <p>${detalhe}</p>
       <p>Lançado em ${dt}</p>
       ${item.fotos && item.fotos.length ? `<div style="display:flex;gap:6px;margin-top:6px">${item.fotos.map(u=>`<img src="${u}" style="width:48px;height:48px;border-radius:6px;object-fit:cover;border:1px solid var(--cinza-borda)">`).join('')}</div>`:''} 
     </div>
     <div class="alerta-acoes">
       ${diasBadge}
-      <select id="dest-${item.id}-${item._tipo}">${opcoesDestino}</select>
-      <button class="btn-resolver" onclick="resolverAlerta('${item.id}','${item._tipo}',this)">✓ Resolver</button>
+      <button class="btn-resolver" onclick="abrirModalResolucao('${item.id}','${item._tipo}',decodeURIComponent('${itemJson}'))">📋 Resolver</button>
     </div>
   </div>`;
 }
@@ -766,21 +925,294 @@ function renderResolvido(item) {
   </div>`;
 }
 
-async function resolverAlerta(id, tipo, btn) {
-  const destino = document.getElementById('dest-'+id+'-'+tipo).value;
-  if (!destino) { toast('Selecione o destino antes de resolver.','erro'); return; }
-  btn.disabled = true; btn.textContent = '...';
-  const tabela = tipo==='prev' ? 'apb_prevencao' : 'apb_avarias';
+// ========== MODAL DE RESOLUÇÃO ==========
+let itemModalAtual = null;
+
+function abrirModalResolucao(id, tipo, itemJson) {
+  itemModalAtual = JSON.parse(itemJson);
+  itemModalAtual._id = id;
+  itemModalAtual._tipo = tipo;
+  const isPrev = tipo === 'prev';
+  const m = document.getElementById('modal-resolucao');
+
+  document.getElementById('modal-prod-nome').textContent = itemModalAtual.produto_nome + ' (' + (itemModalAtual.produto_codigo||'') + ')';
+  document.getElementById('modal-qtd-info').textContent = 'Qtd: ' + itemModalAtual.quantidade + (itemModalAtual.tipo_embalagem ? ' · ' + itemModalAtual.tipo_embalagem : '');
+
+  document.getElementById('secao-prev-fin').style.display = isPrev ? 'block' : 'none';
+  document.getElementById('secao-av-fin').style.display  = !isPrev ? 'block' : 'none';
+
+  // resetar campos
+  ['fin-custo','fin-venda','fin-rebaixado','fin-fornecedor','fin-av-custo'].forEach(id => {
+    const el = document.getElementById(id); if(el) el.value='';
+  });
+  document.getElementById('resumo-fin-prev').style.display='none';
+  document.getElementById('resumo-fin-av').style.display='none';
+  setPagoFornecedor(null);
+
+  m.style.display='flex';
+}
+
+function fecharModal() {
+  document.getElementById('modal-resolucao').style.display='none';
+  itemModalAtual=null;
+}
+
+// ===== PREVENÇÃO: cálculo rebaixa =====
+function calcularRebaixa() {
+  const qtd   = parseFloat(itemModalAtual.quantidade)||0;
+  const custo = parseFloat(document.getElementById('fin-custo').value)||0;
+  const venda = parseFloat(document.getElementById('fin-venda').value)||0;
+  const rebx  = parseFloat(document.getElementById('fin-rebaixado').value)||0;
+  if(!custo||!rebx) return;
+
+  const perdaUnit   = Math.max(0, custo - rebx);
+  const perdaTotal  = perdaUnit * qtd;
+  const receitaEsperada = venda * qtd;
+  const receitaReal     = rebx  * qtd;
+  const margemPerdida   = receitaEsperada - receitaReal;
+
+  document.getElementById('r-qtd').textContent      = qtd + ' un';
+  document.getElementById('r-custo').textContent    = 'R$ ' + custo.toFixed(2);
+  document.getElementById('r-venda').textContent    = 'R$ ' + venda.toFixed(2);
+  document.getElementById('r-rebaixado').textContent= 'R$ ' + rebx.toFixed(2);
+  document.getElementById('r-perda-unit').textContent = 'R$ ' + perdaUnit.toFixed(2);
+  document.getElementById('r-perda-total').textContent= 'R$ ' + perdaTotal.toFixed(2);
+  document.getElementById('r-margem').textContent   = 'R$ ' + margemPerdida.toFixed(2);
+  document.getElementById('resumo-fin-prev').style.display='block';
+}
+
+// ===== AVARIA: cálculo =====
+let pagoFornecedorAtual = null;
+function setPagoFornecedor(val) {
+  pagoFornecedorAtual = val;
+  document.getElementById('btn-pago-sim').className = val===true  ? 'ativo-sim' : '';
+  document.getElementById('btn-pago-nao').className = val===false ? 'ativo-nao' : '';
+  document.getElementById('campo-av-custo').style.display = val===true ? 'block' : 'none';
+  if(val===false) calcularAvaria();
+}
+
+function calcularAvaria() {
+  const qtd   = parseFloat(itemModalAtual.quantidade)||0;
+  const custo = parseFloat(document.getElementById('fin-av-custo').value)||0;
+  if(pagoFornecedorAtual===true && !custo) return;
+
+  const totalAv = pagoFornecedorAtual===true ? custo*qtd : 0;
+  document.getElementById('r-av-qtd').textContent   = qtd + ' un';
+  document.getElementById('r-av-custo').textContent = pagoFornecedorAtual===true ? 'R$ '+custo.toFixed(2) : '—';
+  document.getElementById('r-av-total').textContent = pagoFornecedorAtual===true ? 'R$ '+totalAv.toFixed(2) : 'Prejuízo (sem ressarcimento)';
+  document.getElementById('r-av-total').style.color = pagoFornecedorAtual===true ? 'var(--verde)' : 'var(--vermelho)';
+  document.getElementById('resumo-fin-av').style.display='block';
+}
+
+// ===== SALVAR RESOLUÇÃO =====
+async function salvarResolucaoModal() {
+  if(!itemModalAtual) return;
+  const isPrev = itemModalAtual._tipo === 'prev';
+  const id = itemModalAtual._id;
+  const tabela = isPrev ? 'apb_prevencao' : 'apb_avarias';
+
+  let extras = {};
+  if(isPrev) {
+    const destino = document.getElementById('fin-rebaixado').value ? 'Preço rebaixado' : 'Pague 1, leve 2';
+    const fornecedor = document.getElementById('fin-fornecedor').value||null;
+    extras = {
+      destino,
+      fin_custo: parseFloat(document.getElementById('fin-custo').value)||null,
+      fin_venda: parseFloat(document.getElementById('fin-venda').value)||null,
+      fin_rebaixado: parseFloat(document.getElementById('fin-rebaixado').value)||null,
+      fin_fornecedor: fornecedor,
+      fin_pago_fornecedor: true
+    };
+  } else {
+    const pago = pagoFornecedorAtual;
+    const destino = document.getElementById('av-destino-sel').value;
+    if(!destino){toast('Selecione o destino da mercadoria.','erro');return;}
+    extras = {
+      destino,
+      fin_pago_fornecedor: pago,
+      fin_av_custo: pago ? parseFloat(document.getElementById('fin-av-custo').value)||null : null,
+      fin_av_total: pago ? (parseFloat(document.getElementById('fin-av-custo').value)||0)*(itemModalAtual.quantidade||0) : null
+    };
+  }
+
   const { error } = await sb.from(tabela).update({
     status: 'resolvido',
-    destino,
     resolvido_por: usuarioAtual.id,
-    resolvido_em: new Date().toISOString()
+    resolvido_em: new Date().toISOString(),
+    ...extras
   }).eq('id', id);
-  if (error) { toast('Erro ao resolver.','erro'); btn.disabled=false; btn.textContent='✓ Resolver'; return; }
-  toast('Resolvido: '+destino,'sucesso');
-  document.getElementById('alerta-'+id+'-'+tipo).remove();
+
+  if(error){ toast('Erro ao salvar: '+error.message,'erro'); return; }
+  toast('Resolvido com sucesso!','sucesso');
+  fecharModal();
   carregarAdmin();
+}
+
+// ===== GERAR MENSAGEM WHATSAPP =====
+function gerarMensagemWpp(tipo) {
+  const item = itemModalAtual;
+  const dt = new Date().toLocaleDateString('pt-BR');
+  let msg = '';
+  if(tipo==='rebaixa') {
+    const qtd   = item.quantidade||0;
+    const custo = parseFloat(document.getElementById('fin-custo').value)||0;
+    const rebx  = parseFloat(document.getElementById('fin-rebaixado').value)||0;
+    const perda = Math.max(0,custo-rebx)*qtd;
+    const forn  = document.getElementById('fin-fornecedor').value||'[Fornecedor]';
+    msg = `*SELL-OUT / REBAIXA DE PREÇO*%0A`+
+          `Armazém Preço Baixo — ${dt}%0A%0A`+
+          `Produto: ${item.produto_nome}%0A`+
+          `Código: ${item.produto_codigo||'—'}%0A`+
+          `Lote: ${item.lote||'—'}%0A`+
+          `Vencimento: ${item.data_vencimento||'—'}%0A`+
+          `Quantidade: ${qtd} un%0A`+
+          `Preço de custo: R$ ${custo.toFixed(2)}%0A`+
+          `Preço rebaixado: R$ ${rebx.toFixed(2)}%0A`+
+          `*Perda total: R$ ${perda.toFixed(2)}*%0A%0A`+
+          `Solicitamos o ressarcimento conforme acordo comercial.%0A`+
+          `Fornecedor: ${forn}`;
+  } else {
+    const qtd   = item.quantidade||0;
+    const custo = parseFloat(document.getElementById('fin-av-custo').value)||0;
+    const total = custo*qtd;
+    msg = `*RELATÓRIO DE AVARIA*%0A`+
+          `Armazém Preço Baixo — ${dt}%0A%0A`+
+          `Produto: ${item.produto_nome}%0A`+
+          `Código: ${item.produto_codigo||'—'}%0A`+
+          `Tipo avaria: ${item.tipo_avaria==='validade'?'Fora da validade':'Defeito de armazenamento'}%0A`+
+          `${item.tipo_defeito?'Defeito: '+item.tipo_defeito+'%0A':''}Quantidade: ${qtd} un%0A`+
+          `Valor unitário: R$ ${custo.toFixed(2)}%0A`+
+          `*Valor total a receber: R$ ${total.toFixed(2)}*%0A%0A`+
+          `Aguardamos contato para acerto.`;
+  }
+  window.open('https://api.whatsapp.com/send?text='+msg,'_blank');
+}
+
+// ===== GERAR PDF =====
+function gerarPDF(tipo) {
+  const item = itemModalAtual;
+  const dt = new Date().toLocaleDateString('pt-BR');
+  let corpo = '';
+  if(tipo==='rebaixa') {
+    const qtd   = item.quantidade||0;
+    const custo = parseFloat(document.getElementById('fin-custo').value)||0;
+    const venda = parseFloat(document.getElementById('fin-venda').value)||0;
+    const rebx  = parseFloat(document.getElementById('fin-rebaixado').value)||0;
+    const perdaUnit  = Math.max(0,custo-rebx);
+    const perdaTotal = perdaUnit*qtd;
+    const forn = document.getElementById('fin-fornecedor').value||'Não informado';
+    corpo = `<h2 style="color:#0A2A8C">SELL-OUT / REBAIXA DE PREÇO</h2>
+    <p><b>Armazém Preço Baixo</b> &nbsp;|&nbsp; Emitido em: ${dt}</p><hr>
+    <table width="100%" style="border-collapse:collapse;margin-top:16px">
+      <tr><td style="padding:6px;border:1px solid #ddd"><b>Produto</b></td><td style="padding:6px;border:1px solid #ddd">${item.produto_nome}</td></tr>
+      <tr><td style="padding:6px;border:1px solid #ddd"><b>Código ERP</b></td><td style="padding:6px;border:1px solid #ddd">${item.produto_codigo||'—'}</td></tr>
+      <tr><td style="padding:6px;border:1px solid #ddd"><b>Lote</b></td><td style="padding:6px;border:1px solid #ddd">${item.lote||'—'}</td></tr>
+      <tr><td style="padding:6px;border:1px solid #ddd"><b>Vencimento</b></td><td style="padding:6px;border:1px solid #ddd">${item.data_vencimento||'—'}</td></tr>
+      <tr><td style="padding:6px;border:1px solid #ddd"><b>Quantidade</b></td><td style="padding:6px;border:1px solid #ddd">${qtd} un</td></tr>
+      <tr><td style="padding:6px;border:1px solid #ddd"><b>Preço de custo</b></td><td style="padding:6px;border:1px solid #ddd">R$ ${custo.toFixed(2)}</td></tr>
+      <tr><td style="padding:6px;border:1px solid #ddd"><b>Preço de venda original</b></td><td style="padding:6px;border:1px solid #ddd">R$ ${venda.toFixed(2)}</td></tr>
+      <tr><td style="padding:6px;border:1px solid #ddd"><b>Preço rebaixado</b></td><td style="padding:6px;border:1px solid #ddd">R$ ${rebx.toFixed(2)}</td></tr>
+      <tr><td style="padding:6px;border:1px solid #ddd;background:#fff3b0"><b>Perda por unidade</b></td><td style="padding:6px;border:1px solid #ddd;background:#fff3b0">R$ ${perdaUnit.toFixed(2)}</td></tr>
+      <tr><td style="padding:6px;border:1px solid #ddd;background:#fdf0ee;color:#c0392b"><b>PERDA TOTAL</b></td><td style="padding:6px;border:1px solid #ddd;background:#fdf0ee;color:#c0392b"><b>R$ ${perdaTotal.toFixed(2)}</b></td></tr>
+      <tr><td style="padding:6px;border:1px solid #ddd"><b>Fornecedor</b></td><td style="padding:6px;border:1px solid #ddd">${forn}</td></tr>
+    </table>
+    <p style="margin-top:24px;color:#5a6480;font-size:13px">Este documento é um comprovante de sell-out e base para contas a receber do fornecedor.</p>`;
+  } else {
+    const qtd   = item.quantidade||0;
+    const custo = parseFloat(document.getElementById('fin-av-custo').value)||0;
+    const total = custo*qtd;
+    const pago  = pagoFornecedorAtual;
+    corpo = `<h2 style="color:#0A2A8C">RELATÓRIO DE AVARIA</h2>
+    <p><b>Armazém Preço Baixo</b> &nbsp;|&nbsp; Emitido em: ${dt}</p><hr>
+    <table width="100%" style="border-collapse:collapse;margin-top:16px">
+      <tr><td style="padding:6px;border:1px solid #ddd"><b>Produto</b></td><td style="padding:6px;border:1px solid #ddd">${item.produto_nome}</td></tr>
+      <tr><td style="padding:6px;border:1px solid #ddd"><b>Código ERP</b></td><td style="padding:6px;border:1px solid #ddd">${item.produto_codigo||'—'}</td></tr>
+      <tr><td style="padding:6px;border:1px solid #ddd"><b>Tipo de avaria</b></td><td style="padding:6px;border:1px solid #ddd">${item.tipo_avaria==='validade'?'Fora da validade':'Defeito de armazenamento'}</td></tr>
+      <tr><td style="padding:6px;border:1px solid #ddd"><b>Defeito</b></td><td style="padding:6px;border:1px solid #ddd">${item.tipo_defeito||'—'}</td></tr>
+      <tr><td style="padding:6px;border:1px solid #ddd"><b>Quantidade</b></td><td style="padding:6px;border:1px solid #ddd">${qtd} un</td></tr>
+      <tr><td style="padding:6px;border:1px solid #ddd"><b>Ressarcimento fornecedor</b></td><td style="padding:6px;border:1px solid #ddd">${pago?'✅ Sim':'❌ Não'}</td></tr>
+      ${pago?`<tr><td style="padding:6px;border:1px solid #ddd"><b>Valor unitário</b></td><td style="padding:6px;border:1px solid #ddd">R$ ${custo.toFixed(2)}</td></tr>
+      <tr><td style="padding:6px;border:1px solid #ddd;background:#eaf7ee;color:#1a7a4a"><b>TOTAL A RECEBER</b></td><td style="padding:6px;border:1px solid #ddd;background:#eaf7ee;color:#1a7a4a"><b>R$ ${total.toFixed(2)}</b></td></tr>`
+      :`<tr><td style="padding:6px;border:1px solid #ddd;background:#fdf0ee;color:#c0392b"><b>PREJUÍZO TOTAL</b></td><td style="padding:6px;border:1px solid #ddd;background:#fdf0ee;color:#c0392b"><b>R$ ${(0).toFixed(2)} (sem ressarcimento)</b></td></tr>`}
+    </table>
+    <p style="margin-top:24px;color:#5a6480;font-size:13px">${pago?'Este documento é base para cobrança ao fornecedor.':'Este valor deve ser lançado como prejuízo no período.'}</p>`;
+  }
+
+  const win = window.open('','_blank');
+  win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Relatório APB</title>
+  <style>body{font-family:Arial,sans-serif;padding:2rem;max-width:700px;margin:0 auto;color:#1a2340}hr{border:none;border-top:2px solid #F5C200;margin:12px 0}@media print{body{padding:0}}</style>
+  </head><body>${corpo}<div style="margin-top:32px;text-align:center"><button onclick="window.print()" style="padding:10px 24px;background:#0A2A8C;color:#fff;border:none;border-radius:8px;font-size:14px;cursor:pointer">🖨️ Imprimir / Salvar PDF</button></div></body></html>`);
+  win.document.close();
+}
+
+// ===== NAVEGAÇÃO SEÇÕES ADMIN =====
+function mudarSecaoAdmin(secao, btn) {
+  ['alertas','rebaixas','avarias-fin','prejuizos'].forEach(s => {
+    document.getElementById('secao-'+s).style.display = s===secao?'block':'none';
+  });
+  document.querySelectorAll('.btn-secao').forEach(b=>b.classList.remove('ativo'));
+  btn.classList.add('ativo');
+  if(secao==='rebaixas') carregarRebaixas();
+  if(secao==='avarias-fin') carregarAvariasFin();
+  if(secao==='prejuizos') carregarPrejuizos();
+}
+
+async function carregarRebaixas() {
+  const { data } = await sb.from('apb_prevencao').select('*').eq('status','resolvido').not('fin_rebaixado','is',null).order('resolvido_em',{ascending:false});
+  const el = document.getElementById('lista-rebaixas');
+  if(!data||!data.length){el.innerHTML='<p style="color:var(--cinza-texto);text-align:center;padding:1rem;">Nenhuma rebaixa registrada ainda.</p>';return;}
+  const totalPerda = data.reduce((s,x)=>s+(Math.max(0,(x.fin_custo||0)-(x.fin_rebaixado||0))*(x.quantidade||0)),0);
+  el.innerHTML = `<div class="resumo-fin" style="margin-bottom:1rem"><h4>Totais do período</h4>
+    <div class="resumo-linha"><span>Registros</span><span>${data.length}</span></div>
+    <div class="resumo-linha destaque"><span>Perda total acumulada</span><span>R$ ${totalPerda.toFixed(2)}</span></div>
+  </div>` + data.map(x=>{
+    const perda=(Math.max(0,(x.fin_custo||0)-(x.fin_rebaixado||0))*(x.quantidade||0));
+    const dt=x.resolvido_em?new Date(x.resolvido_em).toLocaleDateString('pt-BR'):'—';
+    return `<div class="relatorio-card">
+      <h4>${x.produto_nome} <span style="font-weight:400;font-size:12px;color:var(--cinza-texto)">${x.produto_codigo||''}</span></h4>
+      <p>Qtd: ${x.quantidade} · Custo: R$ ${(x.fin_custo||0).toFixed(2)} · Rebaixado: R$ ${(x.fin_rebaixado||0).toFixed(2)} · Resolvido: ${dt}</p>
+      <div class="valor-grande">Perda: R$ ${perda.toFixed(2)}</div>
+      ${x.fin_fornecedor?`<p>Fornecedor: <b>${x.fin_fornecedor}</b></p>`:''}
+    </div>`;
+  }).join('');
+}
+
+async function carregarAvariasFin() {
+  const { data } = await sb.from('apb_avarias').select('*').eq('status','resolvido').eq('fin_pago_fornecedor',true).order('resolvido_em',{ascending:false});
+  const el = document.getElementById('lista-avarias-fin');
+  if(!data||!data.length){el.innerHTML='<p style="color:var(--cinza-texto);text-align:center;padding:1rem;">Nenhuma avaria com ressarcimento registrada.</p>';return;}
+  const totalReceber = data.reduce((s,x)=>s+(x.fin_av_total||0),0);
+  el.innerHTML = `<div class="resumo-fin" style="margin-bottom:1rem"><h4>Total a receber dos fornecedores</h4>
+    <div class="resumo-linha"><span>Registros</span><span>${data.length}</span></div>
+    <div class="resumo-linha positivo"><span>Total a receber</span><span>R$ ${totalReceber.toFixed(2)}</span></div>
+  </div>` + data.map(x=>{
+    const dt=x.resolvido_em?new Date(x.resolvido_em).toLocaleDateString('pt-BR'):'—';
+    return `<div class="relatorio-card">
+      <h4>${x.produto_nome}</h4>
+      <p>Qtd: ${x.quantidade} · ${x.tipo_defeito||x.tipo_avaria} · ${dt}</p>
+      <div class="valor-grande verde">A receber: R$ ${(x.fin_av_total||0).toFixed(2)}</div>
+    </div>`;
+  }).join('');
+}
+
+async function carregarPrejuizos() {
+  const { data } = await sb.from('apb_avarias').select('*').eq('status','resolvido').eq('fin_pago_fornecedor',false).order('resolvido_em',{ascending:false});
+  const el = document.getElementById('lista-prejuizos');
+  if(!data||!data.length){el.innerHTML='<p style="color:var(--cinza-texto);text-align:center;padding:1rem;">Nenhum prejuízo sem ressarcimento registrado.</p>';return;}
+  el.innerHTML = `<div class="resumo-fin" style="margin-bottom:1rem"><h4>Prejuízos sem ressarcimento</h4>
+    <div class="resumo-linha destaque"><span>Total de ocorrências</span><span>${data.length}</span></div>
+  </div>` + data.map(x=>{
+    const dt=x.resolvido_em?new Date(x.resolvido_em).toLocaleDateString('pt-BR'):'—';
+    return `<div class="relatorio-card">
+      <h4>${x.produto_nome}</h4>
+      <p>Qtd: ${x.quantidade} · ${x.tipo_defeito||x.tipo_avaria} · Destino: ${x.destino||'—'} · ${dt}</p>
+      <div class="valor-grande">Sem ressarcimento</div>
+    </div>`;
+  }).join('');
+}
+
+async function resolverAlerta(id, tipo, btn) {
+  // mantida por compatibilidade — agora o fluxo vai pelo modal
 }
 
 // ========== LIMPAR FORM ==========
