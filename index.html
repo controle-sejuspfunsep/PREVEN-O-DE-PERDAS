@@ -146,6 +146,24 @@ nav{background:var(--azul-escuro);display:flex;gap:0;overflow-x:auto;}
 .sub-campo{display:none;}
 .sub-campo.visivel{display:block;}
 
+/* Painel operador — cards de lançamento */
+.lanc-item{display:flex;align-items:flex-start;gap:12px;padding:14px;border-radius:var(--radius);border:1px solid var(--cinza-borda);margin-bottom:8px;background:var(--branco);}
+.lanc-ico{width:40px;height:40px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;}
+.lanc-corpo{flex:1;}
+.lanc-corpo h4{font-size:14px;font-weight:700;color:var(--azul-escuro);margin-bottom:3px;}
+.lanc-corpo p{font-size:12px;color:var(--cinza-texto);margin-bottom:2px;}
+.lanc-destino{margin-top:8px;padding:8px 12px;border-radius:8px;font-size:13px;font-weight:600;display:flex;align-items:center;gap:6px;}
+.destino-prev{background:var(--amarelo-claro);color:var(--azul-escuro);}
+.destino-av-descarte{background:var(--vermelho-bg);color:var(--vermelho);}
+.destino-av-troca{background:var(--verde-bg);color:var(--verde);}
+.destino-pendente{background:var(--laranja-bg);color:var(--laranja);}
+.tab-filtro{display:flex;gap:6px;margin-bottom:1rem;flex-wrap:wrap;}
+.tab-f{padding:7px 16px;border-radius:20px;border:1.5px solid var(--cinza-borda);background:var(--branco);color:var(--cinza-texto);font-size:13px;font-weight:600;cursor:pointer;transition:all 0.15s;}
+.tab-f.ativo{background:var(--azul);border-color:var(--azul);color:var(--branco);}
+.empty-state{text-align:center;padding:2.5rem 1rem;color:var(--cinza-texto);}
+.empty-state .ei{font-size:36px;margin-bottom:8px;}
+.op-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:1.25rem;}
+
 /* Spinner */
 .spinner{display:inline-block;width:18px;height:18px;border:2.5px solid rgba(255,255,255,0.3);border-top-color:#fff;border-radius:50%;animation:spin 0.7s linear infinite;vertical-align:middle;}
 @keyframes spin{to{transform:rotate(360deg);}}
@@ -201,6 +219,7 @@ nav{background:var(--azul-escuro);display:flex;gap:0;overflow-x:auto;}
   <nav>
     <button class="nav-btn ativa" onclick="mudarAba('prevencao', this)">⚠️ Prevenção de Perdas</button>
     <button class="nav-btn" onclick="mudarAba('avarias', this)">📦 Avarias</button>
+    <button class="nav-btn" id="btn-nav-operador" onclick="mudarAba('operador', this)" style="display:none">📋 Meus Lançamentos</button>
     <button class="nav-btn" id="btn-nav-admin" onclick="mudarAba('admin', this)" style="display:none">🛡️ Painel Admin</button>
   </nav>
 
@@ -392,6 +411,31 @@ nav{background:var(--azul-escuro);display:flex;gap:0;overflow-x:auto;}
       </div>
     </div>
 
+
+    <!-- ABA OPERADOR — MEUS LANÇAMENTOS -->
+    <div id="aba-operador" style="display:none">
+
+      <div class="op-stats">
+        <div class="stat"><div class="stat-val" id="op-stat-total">—</div><div class="stat-lbl">Meus lançamentos</div></div>
+        <div class="stat"><div class="stat-val warn" id="op-stat-pend">—</div><div class="stat-lbl">Aguardando resolução</div></div>
+        <div class="stat"><div class="stat-val ok" id="op-stat-res">—</div><div class="stat-lbl">Resolvidos</div></div>
+      </div>
+
+      <div class="card">
+        <div class="card-titulo"><span class="icone">📋</span> Meus lançamentos e resoluções</div>
+
+        <div class="tab-filtro">
+          <button class="tab-f ativo" onclick="filtrarLanc('todos', this)">Todos</button>
+          <button class="tab-f" onclick="filtrarLanc('pendente', this)">⏳ Aguardando</button>
+          <button class="tab-f" onclick="filtrarLanc('resolvido', this)">✅ Resolvidos</button>
+          <button class="tab-f" onclick="filtrarLanc('prevencao', this)">⚠️ Prevenção</button>
+          <button class="tab-f" onclick="filtrarLanc('avaria', this)">📦 Avarias</button>
+        </div>
+
+        <div id="lista-operador"><div class="empty-state"><div class="ei">📋</div><p>Carregando seus lançamentos...</p></div></div>
+      </div>
+    </div>
+
   </div><!-- /conteudo -->
 </div><!-- /app -->
 
@@ -462,6 +506,9 @@ async function iniciarApp(user) {
   if (perfil?.perfil === 'master') {
     badge.classList.add('badge-master');
     document.getElementById('btn-nav-admin').style.display = 'block';
+  } else {
+    // operador: mostrar aba "Meus Lançamentos"
+    document.getElementById('btn-nav-operador').style.display = 'block';
   }
 }
 
@@ -478,12 +525,13 @@ async function fazerLogout() {
 
 // ========== NAVEGAÇÃO ==========
 function mudarAba(aba, btn) {
-  ['prevencao','avarias','admin'].forEach(a => {
+  ['prevencao','avarias','admin','operador'].forEach(a => {
     document.getElementById('aba-'+a).style.display = a===aba ? 'block' : 'none';
   });
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('ativa'));
   btn.classList.add('ativa');
   if (aba === 'admin') carregarAdmin();
+  if (aba === 'operador') carregarMeusLancamentos();
 }
 
 // ========== BUSCA PRODUTO ==========
@@ -759,6 +807,94 @@ function toast(msg, tipo='') {
   el.textContent=msg; el.className=tipo; el.style.display='block';
   setTimeout(()=>el.style.display='none',3200);
 }
+
+// ========== PAINEL OPERADOR ==========
+let todosLancamentos = [];
+let filtroAtual = 'todos';
+
+async function carregarMeusLancamentos() {
+  document.getElementById('lista-operador').innerHTML = '<div class="empty-state"><div class="ei">⏳</div><p>Carregando...</p></div>';
+  const uid = usuarioAtual.id;
+  const [{ data: prev }, { data: av }] = await Promise.all([
+    sb.from('apb_prevencao').select('*').eq('criado_por', uid).order('created_at', {ascending: false}),
+    sb.from('apb_avarias').select('*').eq('criado_por', uid).order('created_at', {ascending: false})
+  ]);
+  const lancPrev = (prev||[]).map(x => ({...x, _tipo: 'prevencao'}));
+  const lancAv   = (av||[]).map(x => ({...x, _tipo: 'avaria'}));
+  todosLancamentos = [...lancPrev, ...lancAv].sort((a,b) => new Date(b.created_at) - new Date(a.created_at));
+
+  const total = todosLancamentos.length;
+  const pend  = todosLancamentos.filter(x => x.status === 'pendente').length;
+  const res   = todosLancamentos.filter(x => x.status === 'resolvido').length;
+  document.getElementById('op-stat-total').textContent = total;
+  document.getElementById('op-stat-pend').textContent  = pend;
+  document.getElementById('op-stat-res').textContent   = res;
+
+  renderizarLanc();
+}
+
+function filtrarLanc(filtro, btn) {
+  filtroAtual = filtro;
+  document.querySelectorAll('.tab-f').forEach(b => b.classList.remove('ativo'));
+  btn.classList.add('ativo');
+  renderizarLanc();
+}
+
+function renderizarLanc() {
+  let lista = todosLancamentos;
+  if (filtroAtual === 'pendente')  lista = lista.filter(x => x.status === 'pendente');
+  if (filtroAtual === 'resolvido') lista = lista.filter(x => x.status === 'resolvido');
+  if (filtroAtual === 'prevencao') lista = lista.filter(x => x._tipo === 'prevencao');
+  if (filtroAtual === 'avaria')    lista = lista.filter(x => x._tipo === 'avaria');
+
+  const el = document.getElementById('lista-operador');
+  if (lista.length === 0) {
+    el.innerHTML = '<div class="empty-state"><div class="ei">📭</div><p>Nenhum lançamento encontrado.</p></div>';
+    return;
+  }
+  el.innerHTML = lista.map(item => renderCardOperador(item)).join('');
+}
+
+function renderCardOperador(item) {
+  const isPrev = item._tipo === 'prevencao';
+  const dt = new Date(item.created_at).toLocaleString('pt-BR');
+  const detalhe = isPrev
+    ? `Validade: <strong>${item.data_vencimento}</strong> · Lote: ${item.lote||'—'} · ${item.quantidade} un · ${item.tipo_embalagem||'—'}`
+    : `Avaria: <strong>${item.tipo_avaria === 'validade' ? 'Fora da validade' : 'Armazenamento'}</strong>${item.tipo_defeito ? ' — ' + item.tipo_defeito : ''} · ${item.quantidade} un`;
+
+  let destinoHtml = '';
+  if (item.status === 'resolvido' && item.destino) {
+    let cls = 'destino-pendente';
+    let emoji = '📦';
+    if (item.destino === 'Preço rebaixado')    { cls = 'destino-prev'; emoji = '🏷️'; }
+    if (item.destino === 'Pague 1, leve 2')    { cls = 'destino-prev'; emoji = '🎁'; }
+    if (item.destino === 'Descarte')            { cls = 'destino-av-descarte'; emoji = '🗑️'; }
+    if (item.destino === 'Guardar para troca')  { cls = 'destino-av-troca'; emoji = '🔄'; }
+    const dtRes = item.resolvido_em ? new Date(item.resolvido_em).toLocaleString('pt-BR') : '';
+    destinoHtml = `<div class="lanc-destino ${cls}">${emoji} Destino definido: <strong>${item.destino}</strong>${dtRes ? ' · ' + dtRes : ''}</div>`;
+  } else {
+    destinoHtml = `<div class="lanc-destino destino-pendente">⏳ Aguardando resolução do administrador</div>`;
+  }
+
+  const fotosHtml = item.fotos && item.fotos.length
+    ? `<div style="display:flex;gap:6px;margin-top:8px">${item.fotos.map(u=>`<img src="${u}" style="width:48px;height:48px;border-radius:6px;object-fit:cover;border:1px solid var(--cinza-borda)">`).join('')}</div>`
+    : '';
+
+  return `<div class="lanc-item">
+    <div class="lanc-ico ${isPrev ? 'ico-prev' : 'ico-av'}">${isPrev ? '⏰' : '📦'}</div>
+    <div class="lanc-corpo">
+      <h4>${item.produto_nome} <span style="font-size:11px;font-weight:400;color:var(--cinza-texto)">${item.produto_codigo}</span></h4>
+      <p>${detalhe}</p>
+      <p style="margin-top:2px">Lançado em ${dt}</p>
+      ${fotosHtml}
+      ${destinoHtml}
+    </div>
+    <div style="flex-shrink:0">
+      <span class="${item.status === 'resolvido' ? 'tag-resolvido' : 'tag-pendente'}">${item.status === 'resolvido' ? '✓ Resolvido' : '⏳ Pendente'}</span>
+    </div>
+  </div>`;
+}
+
 </script>
 </body>
 </html>
