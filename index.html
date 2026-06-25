@@ -588,9 +588,9 @@ nav{background:var(--azul-escuro);display:flex;gap:0;overflow-x:auto;}
 
     <!-- Busca de fornecedor -->
     <div style="margin-bottom:1.25rem;">
-      <div style="font-size:11px;font-weight:700;color:var(--cinza-texto);text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px;">🏭 Fornecedor responsável</div>
+      <div style="font-size:11px;font-weight:700;color:var(--azul);text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px;">🏭 Fornecedor responsável <span style="color:var(--vermelho)">*</span> <span style="font-weight:400;font-size:10px;color:var(--cinza-texto)">(obrigatório)</span></div>
       <div class="busca-wrap" id="forn-busca-wrap">
-        <input type="text" id="forn-busca-input" placeholder="Digite o nome ou código do fornecedor..."
+        <input type="text" id="forn-busca-input" placeholder="🔍 Digite o nome ou código do fornecedor..." style="border-color:var(--azul);"
           oninput="buscarFornecedor(this.value)" onfocus="abrirDropForn()" autocomplete="off">
         <input type="hidden" id="forn-selecionado-codigo">
         <input type="hidden" id="forn-selecionado-nome">
@@ -617,10 +617,7 @@ nav{background:var(--azul-escuro);display:flex;gap:0;overflow-x:auto;}
           <label>Preço rebaixado (R$)</label>
           <input type="number" id="fin-rebaixado" placeholder="0,00" step="0.01" oninput="calcularRebaixa()">
         </div>
-        <div class="fin-campo">
-          <label>Fornecedor responsável</label>
-          <input type="text" id="fin-fornecedor" placeholder="Nome do fornecedor">
-        </div>
+
       </div>
 
       <div class="resumo-fin" id="resumo-fin-prev" style="display:none;">
@@ -1151,6 +1148,20 @@ function calcularAvaria() {
 // ===== SALVAR RESOLUÇÃO =====
 async function salvarResolucaoModal() {
   if(!itemModalAtual) return;
+
+  // Fornecedor obrigatório
+  const fornCodVal  = document.getElementById('forn-selecionado-codigo').value||'';
+  const fornNomeVal = document.getElementById('forn-selecionado-nome').value||'';
+  if(!fornCodVal) {
+    // destacar campo visualmente
+    const wrap = document.getElementById('forn-busca-wrap');
+    wrap.querySelector('input').style.borderColor='var(--vermelho)';
+    wrap.querySelector('input').focus();
+    setTimeout(()=>wrap.querySelector('input').style.borderColor='',2500);
+    toast('Selecione o fornecedor antes de salvar.','erro');
+    return;
+  }
+
   const isPrev = itemModalAtual._tipo === 'prev';
   const id = itemModalAtual._id;
   const tabela = isPrev ? 'apb_prevencao' : 'apb_avarias';
@@ -1159,30 +1170,26 @@ async function salvarResolucaoModal() {
   if(isPrev) {
     const destino = document.getElementById('fin-rebaixado').value ? 'Preço rebaixado' : 'Pague 1, leve 2';
     const fornecedor = document.getElementById('fin-fornecedor').value||null;
-    const fornCod = document.getElementById('forn-selecionado-codigo').value||null;
-    const fornNome = document.getElementById('forn-selecionado-nome').value||null;
     extras = {
       destino,
       fin_custo: parseFloat(document.getElementById('fin-custo').value)||null,
       fin_venda: parseFloat(document.getElementById('fin-venda').value)||null,
       fin_rebaixado: parseFloat(document.getElementById('fin-rebaixado').value)||null,
-      fin_fornecedor: fornNome,
-      fin_fornecedor_codigo: fornCod,
+      fin_fornecedor: fornNomeVal,
+      fin_fornecedor_codigo: fornCodVal,
       fin_pago_fornecedor: true
     };
   } else {
     const pago = pagoFornecedorAtual;
     const destino = document.getElementById('av-destino-sel').value;
     if(!destino){toast('Selecione o destino da mercadoria.','erro');return;}
-    const fornCodAv = document.getElementById('forn-selecionado-codigo').value||null;
-    const fornNomeAv = document.getElementById('forn-selecionado-nome').value||null;
     extras = {
       destino,
       fin_pago_fornecedor: pago,
       fin_av_custo: pago ? parseFloat(document.getElementById('fin-av-custo').value)||null : null,
       fin_av_total: pago ? (parseFloat(document.getElementById('fin-av-custo').value)||0)*(itemModalAtual.quantidade||0) : null,
-      fin_fornecedor: fornNomeAv,
-      fin_fornecedor_codigo: fornCodAv
+      fin_fornecedor: fornNomeVal,
+      fin_fornecedor_codigo: fornCodVal
     };
   }
 
