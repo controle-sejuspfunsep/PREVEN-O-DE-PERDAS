@@ -896,11 +896,16 @@ function removerFoto(btn, idx, containerId) {
 async function uploadFotos(arr, pasta) {
   const urls = [];
   for (const f of arr.filter(Boolean)) {
-    const nome = pasta + '/' + Date.now() + '_' + f.name.replace(/[^a-zA-Z0-9._]/g,'_');
-    const { data, error } = await sb.storage.from('apb-fotos').upload(nome, f);
-    if (!error) {
-      const { data: pub } = sb.storage.from('apb-fotos').getPublicUrl(nome);
-      urls.push(pub.publicUrl);
+    try {
+      const nome = pasta + '/' + Date.now() + '_' + f.name.replace(/[^a-zA-Z0-9._]/g,'_');
+      const { data, error } = await sb.storage.from('apb-fotos').upload(nome, f);
+      if (!error) {
+        const { data: pub } = sb.storage.from('apb-fotos').getPublicUrl(nome);
+        urls.push(pub.publicUrl);
+      }
+      // se erro no upload da foto, continua sem ela (não bloqueia o save)
+    } catch(e) {
+      console.warn('Upload foto falhou, continuando sem ela:', e);
     }
   }
   return urls;
@@ -921,17 +926,24 @@ function mostrarOutro(sel) {
 
 // ========== SALVAR PREVENÇÃO ==========
 async function salvarPrevencao() {
-  const codigo = document.getElementById('prev-prod-codigo').value;
-  const nome = document.getElementById('prev-prod-nome').value;
+  let codigo = document.getElementById('prev-prod-codigo').value.trim();
+  let nome   = document.getElementById('prev-prod-nome').value.trim();
+  const inputTexto = document.getElementById('prev-prod-input').value.trim();
+  if (!codigo && inputTexto) { codigo = '—'; nome = inputTexto; }
   const venc = document.getElementById('prev-venc').value;
-  const qtd = document.getElementById('prev-qtd').value;
-  if (!codigo || !venc || !qtd) { toast('Preencha produto, validade e quantidade.','erro'); return; }
+  const qtd  = document.getElementById('prev-qtd').value;
+  if (!inputTexto && !codigo) { toast('Informe o produto.','erro'); document.getElementById('prev-prod-input').focus(); return; }
+  if (!venc) { toast('Informe a data de vencimento.','erro'); document.getElementById('prev-venc').focus(); return; }
+  if (!qtd || parseInt(qtd) <= 0) { toast('Informe a quantidade.','erro'); document.getElementById('prev-qtd').focus(); return; }
   const btn = document.getElementById('btn-salvar-prev');
   btn.innerHTML = '<span class="spinner"></span> Salvando...';
   btn.disabled = true;
   const dias = Math.ceil((new Date(venc) - new Date()) / 86400000);
-  const fotoUrls = await uploadFotos(prevFotos, 'prevencao');
-  const { error } = await sb.from('apb_prevencao').insert({
+  let fotoUrls = [];
+  try { fotoUrls = await uploadFotos(prevFotos, 'prevencao'); } catch(e) { console.warn('Fotos ignoradas:', e); }
+  let insertError = null;
+  try {
+  const { error: _err } = await sb.from('apb_prevencao').insert({
     produto_codigo: codigo,
     produto_nome: nome,
     lote: document.getElementById('prev-lote').value || null,
@@ -943,19 +955,26 @@ async function salvarPrevencao() {
     fotos: fotoUrls.length ? fotoUrls : null,
     criado_por: usuarioAtual.id
   });
+    insertError = _err;
+  } catch(e) { insertError = {message: e.message}; }
   btn.innerHTML = '💾 Salvar e alertar admin';
   btn.disabled = false;
-  if (error) { toast('Erro ao salvar: ' + error.message, 'erro'); return; }
+  if (insertError) { toast('Erro ao salvar: ' + insertError.message, 'erro'); return; }
   toast('Lançamento salvo! Admin foi notificado.','sucesso');
   limparForm('prev');
 }
 
 // ========== SALVAR AVARIA ==========
 async function salvarAvaria() {
-  const codigo = document.getElementById('av-prod-codigo').value;
-  const nome = document.getElementById('av-prod-nome').value;
+  // aceita produto selecionado via dropdown OU digitado manualmente
+  let codigo = document.getElementById('av-prod-codigo').value.trim();
+  let nome   = document.getElementById('av-prod-nome').value.trim();
+  const inputTexto = document.getElementById('av-prod-input').value.trim();
+  // se digitou mas não selecionou via dropdown, usa o texto como nome
+  if (!codigo && inputTexto) { codigo = '—'; nome = inputTexto; }
   const qtd = document.getElementById('av-qtd').value;
-  if (!codigo || !qtd) { toast('Preencha produto e quantidade.','erro'); return; }
+  if (!inputTexto && !codigo) { toast('Informe o produto.','erro'); document.getElementById('av-prod-input').focus(); return; }
+  if (!qtd || parseInt(qtd) <= 0) { toast('Informe a quantidade.','erro'); document.getElementById('av-qtd').focus(); return; }
   const btn = document.getElementById('btn-salvar-av');
   btn.innerHTML = '<span class="spinner"></span> Salvando...';
   btn.disabled = true;
@@ -965,23 +984,28 @@ async function salvarAvaria() {
       ? document.getElementById('av-outro').value
       : document.getElementById('av-defeito').value;
   }
-  const fotoUrls = await uploadFotos(avFotos, 'avarias');
-  const { error } = await sb.from('apb_avarias').insert({
-    produto_codigo: codigo,
-    produto_nome: nome,
-    tipo_avaria: tipoAvariaAtual,
-    lote: document.getElementById('av-lote').value || null,
-    data_vencimento: document.getElementById('av-venc').value || null,
-    tipo_defeito: defeito,
-    quantidade: parseInt(qtd),
-    tipo_embalagem: document.getElementById('av-emb').value || null,
-    observacoes: document.getElementById('av-obs').value || null,
-    fotos: fotoUrls.length ? fotoUrls : null,
-    criado_por: usuarioAtual.id
-  });
+  let fotoUrls = [];
+  try { fotoUrls = await uploadFotos(avFotos, 'avarias'); } catch(e) { console.warn('Fotos ignoradas:', e); }
+  let insertError = null;
+  try {
+    const { error } = await sb.from('apb_avarias').insert({
+      produto_codigo: codigo,
+      produto_nome: nome,
+      tipo_avaria: tipoAvariaAtual,
+      lote: document.getElementById('av-lote').value || null,
+      data_vencimento: document.getElementById('av-venc').value || null,
+      tipo_defeito: defeito,
+      quantidade: parseInt(qtd),
+      tipo_embalagem: document.getElementById('av-emb').value || null,
+      observacoes: document.getElementById('av-obs').value || null,
+      fotos: fotoUrls.length ? fotoUrls : null,
+      criado_por: usuarioAtual.id
+    });
+    insertError = error;
+  } catch(e) { insertError = {message: e.message}; }
   btn.innerHTML = '💾 Salvar e alertar admin';
   btn.disabled = false;
-  if (error) { toast('Erro ao salvar: ' + error.message, 'erro'); return; }
+  if (insertError) { toast('Erro ao salvar: ' + insertError.message, 'erro'); return; }
   toast('Avaria registrada! Admin foi notificado.','sucesso');
   limparForm('av');
 }
